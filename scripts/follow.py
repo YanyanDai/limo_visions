@@ -9,6 +9,7 @@ import numpy as np
 from math import *
 from geometry_msgs.msg import Twist
 from geometry_msgs.msg import Pose
+
 objPose = Pose()
 objPose.position.x = 0
 objPose.position.y = 0
@@ -25,18 +26,15 @@ vel.angular.z = 0.0
 
 class follow_object:
     def __init__(self):    
-        #订阅位姿信息
-
+        #Subscribe Pose
         self.Pose_sub = rospy.Subscriber("object_detect_pose", Pose, self.poseCallback)
-        #发布速度指令
+        #Publish control command
         self.vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=5)
 
     def poseCallback(self,Pose):
-
         X = Pose.position.x;
-        Y = Pose.position.y;
+        Y = Pose.position.y
         Z = Pose.position.z;
-
 
         if Z >=14500 and Z <= 15500 :                            
             vel = Twist()
@@ -69,7 +67,7 @@ class follow_object:
 
 if __name__ == '__main__':
     try:
-        # 初始化ros节点
+        # Initialize ROS node
         rospy.init_node("follow_object")
         rospy.loginfo("Starting follow object")
         follow_object()
