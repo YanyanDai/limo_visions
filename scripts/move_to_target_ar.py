@@ -17,34 +17,37 @@ OVER_DISTANCE = 0.2
 
 class MoveToTarget(object):
     def __init__(self):
-        # ros 初始化
+        # Initialize ROS node
         rospy.init_node('move_to_target_ar', anonymous=True)
 
-        # 发布控制机器人的消息
+        # Publish control command to robot
         self.vel_pub = rospy.Publisher('cmd_vel', Twist, queue_size=5)
 
-        # 创建一个Subscriber，订阅/object_detect_pose
+        # Create a Subscriber，subcribe /ar_pose_marker topic
         self.pose_sub = rospy.Subscriber("/ar_pose_marker",
                                          AlvarMarkers,
                                          self.poseCallback,
                                          queue_size=10)
 
-        # 初始化状态标志
+        # Print state
         print("Wait for Exploring ...")
 
     def poseCallback(self, msg):
-        for marker in msg.markers:
+        for marker in msg.markers:  # there may be several markers.
+            # the unit of the maker position is meter.
             qr_x = marker.pose.pose.position.x
             qr_y = marker.pose.pose.position.y
             qr_z = marker.pose.pose.position.z
             rospy.loginfo("Target{} Pose: x:{}, y:{}, z:{}".format(
                 marker.id, qr_x, qr_y, qr_z))
 
-            #if marker.id is 0 and qr_z < BEGIN_DISTANCE:
-            if marker.id is 0 :
+            # if marker.id is 1 and qr_z < BEGIN_DISTANCE:
+            if marker.id is 1 :
                 vel = Twist()
-                vel.linear.x =  qr_z * 0.5  
-                vel.angular.z = 1.0 * qr_y  
+                vel.linear.x =  qr_z * 0.5  # move forward
+                # if the marker is on the right of the robot's center point, qr_y is negative.
+                # otherwise, qr_y is positive.
+                vel.angular.z = 1.0 * qr_y  # turn
                 self.vel_pub.publish(vel)
                 rospy.loginfo(
                     "Publsh velocity command[{} m/s, {} rad/s]".format(
@@ -58,3 +61,4 @@ if __name__ == '__main__':
 
     except rospy.ROSInterruptException:
         rospy.loginfo("Exploring logistics finished.")
+
